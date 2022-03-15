@@ -1,0 +1,3 @@
+set rtp+=~/.nix-profile/share/vim-plugins/*
+
+color gruvbox
