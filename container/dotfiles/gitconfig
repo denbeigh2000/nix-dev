@@ -1,0 +1,21 @@
+[color]
+    ui = auto
+[core]
+    excludesfile = /home/denbeigh/.config/git/ignore
+	pager = less -SR
+[diff]
+    tool = nvimdiff
+[difftool]
+    prompt = false
+[difftool "nvimdiff"]
+    cmd = "nvim -d \"$LOCAL\" \"$REMOTE\""
+[format]
+    pretty = line
+[help]
+    autoCorrect = -1
+[pretty]
+    line = "format:%C(135)%h%Creset %C(166)%<(10,trunc)%an%Creset %<(40,trunc)%s %C(118)(%cr) %C(81)%d%Creset "
+    message = "format:%C(166)Hash:%Creset   %C(135)%H%Creset %C(81)%d%Creset%n%C(166)Author:%Creset %an <%ae> %C(118)(%ad)%Creset%n%C(166)Commit:%Creset %cn <%ce>%C(118) (%cd)%Creset%n%n%w(0,4)%B  %n"
+[user]
+    email = denbeigh@denbeighstevens.com
+    name = Denbeigh Stevens

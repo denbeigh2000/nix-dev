@@ -26,10 +26,10 @@ let
       gid = 0;
     };
 
-    denbeigh = {
+    ${user} = {
       uid = 1000;
       shell = "/bin/zsh";
-      home = "/home/denbeigh";
+      home = "/home/${user}";
       gid = 1000;
     };
 
@@ -129,6 +129,7 @@ let
 
   zshrcContents = builtins.readFile dotfiles/zshrc;
   nvimrcContents = builtins.readFile dotfiles/nvimrc;
+  gitConfigContents = builtins.readFile dotfiles/gitconfig;
 
   baseSystem = pkgset:
     let
@@ -172,12 +173,13 @@ let
     pkgs.runCommand "base-system"
       {
         inherit passwdContents groupContents shadowContents nixConfContents;
-        inherit nvimrcContents zshrcContents;
+        inherit gitConfigContents nvimrcContents zshrcContents;
         passAsFile = [
           "passwdContents"
           "groupContents"
           "shadowContents"
           "nixConfContents"
+          "gitConfigContents"
           "nvimrcContents"
           "zshrcContents"
         ];
@@ -217,10 +219,12 @@ let
 
       mkdir -p $out/home/${user}
       mkdir -p $out/home/${user}/.config/nvim
+      mkdir -p $out/home/${user}/.config/git
       mkdir -p $out/nix/var/nix/profiles/per-user/${user}
 
       cat $zshrcContentsPath > $out/home/${user}/.zshrc
       cat $nvimrcContentsPath > $out/home/${user}/.config/nvim/init.vim
+      cat $gitConfigContentsPath > $out/home/${user}/.config/git/config
 
       ln -s ${profile} $out/nix/var/nix/profiles/default-1-link
       ln -s $out/nix/var/nix/profiles/default-1-link $out/nix/var/nix/profiles/default
