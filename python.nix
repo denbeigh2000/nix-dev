@@ -1,7 +1,18 @@
-{ pkgs ? import ./pkgs.nix {} }:
+{ pkgs ? import ./pkgs.nix {},
+  vim ? import ./vim.nix {}
+}:
 
-[
-  pkgs.python310
-  pkgs.python310Packages.python-lsp-server
-  pkgs.python310Packages.pynvim
-]
+let
+  deps = with pkgs; [
+    python310
+    python310Packages.python-lsp-server
+    python310Packages.pynvim
+  ];
+
+  nvim = vim.nvimCustom vim.pythonPlugins;
+
+in
+  {
+    inherit deps;
+    inherit nvim;
+  }

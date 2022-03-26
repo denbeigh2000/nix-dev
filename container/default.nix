@@ -12,10 +12,12 @@ let
   base = import ../default.nix { pkgs = pkgs; };
 
   contents = base.fullInteractive
-             ++ base.interactive.container;
+             ++ base.interactive.container
+             ++ [(base.vim.nvimCustom base.vim.allPlugins)];
 
   slimContents = base.interactive.base
-                 ++ base.interactive.container;
+                 ++ base.interactive.container
+                 ++ [(base.vim.nvimCustom (pkgs: []))];
 
   users = {
 
@@ -128,7 +130,6 @@ let
   nixConfContents = (lib.concatStringsSep "\n" (lib.mapAttrsFlatten (n: v: "${n} = ${v}") nixConf)) + "\n";
 
   zshrcContents = builtins.readFile dotfiles/zshrc;
-  nvimrcContents = builtins.readFile dotfiles/nvimrc;
   gitConfigContents = builtins.readFile dotfiles/gitconfig;
 
   baseSystem = pkgset:
@@ -173,14 +174,13 @@ let
     pkgs.runCommand "base-system"
       {
         inherit passwdContents groupContents shadowContents nixConfContents;
-        inherit gitConfigContents nvimrcContents zshrcContents;
+        inherit gitConfigContents zshrcContents;
         passAsFile = [
           "passwdContents"
           "groupContents"
           "shadowContents"
           "nixConfContents"
           "gitConfigContents"
-          "nvimrcContents"
           "zshrcContents"
         ];
         allowSubstitutes = false;
@@ -218,12 +218,10 @@ let
       mkdir -p $out/nix/var/nix/profiles/per-user/root
 
       mkdir -p $out/home/${user}
-      mkdir -p $out/home/${user}/.config/nvim
       mkdir -p $out/home/${user}/.config/git
       mkdir -p $out/nix/var/nix/profiles/per-user/${user}
 
       cat $zshrcContentsPath > $out/home/${user}/.zshrc
-      cat $nvimrcContentsPath > $out/home/${user}/.config/nvim/init.vim
       cat $gitConfigContentsPath > $out/home/${user}/.config/git/config
 
       ln -s ${profile} $out/nix/var/nix/profiles/default-1-link
@@ -251,6 +249,7 @@ let
   buildImage = pkgset: pkgs.dockerTools.buildLayeredImageWithNixDb {
     inherit name tag;
 
+    maxLayers = 125;
     contents = [ (baseSystem pkgset) ];
 
     extraCommands = ''
@@ -261,8 +260,8 @@ let
       chmod 1777 tmp
       chmod 1777 var/tmp
 
-      chown -R ${user}:${user} nix/
-      chown -R ${user}:${user} home/${user}
+      chown -R ${user} nix/
+      chown -R ${user} home/${user}
     '';
 
     config = {
@@ -291,4 +290,5 @@ let
 in
 {
   default = (buildImage slimContents);
+  full = (buildImage contents);
 }

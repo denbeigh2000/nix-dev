@@ -1,8 +1,20 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import ./pkgs.nix {},
+  vim ? import ./vim.nix {}
+}:
 
-[
-  pkgs.rustc
-  pkgs.rustfmt
-  pkgs.rust-analyzer
-  pkgs.cargo
-]
+let
+  deps = with pkgs; [
+    rustc
+    rustfmt
+    rust-analyzer
+    cargo
+    clippy
+  ];
+
+  nvim = vim.nvimCustom vim.rustPlugins;
+
+in
+  {
+    inherit deps;
+    inherit nvim;
+  }

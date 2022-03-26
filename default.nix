@@ -9,8 +9,9 @@ let
   go = import ./go.nix {};
   rust = import ./rust.nix {};
   python = import ./python.nix {};
+  vim = import ./vim.nix {};
 
-  fullInteractive = base ++ interactive.base ++ python ++ rust ++ go;
+  fullInteractive = base ++ interactive.base ++ python.deps ++ rust.deps ++ go.deps;
 
 in
   {
@@ -20,6 +21,8 @@ in
 
     inherit interactive;
     inherit fullInteractive;
+
+    inherit vim;
 
     pythonShell = pkgs.mkShell {
       packages = interactive.base ++ python;

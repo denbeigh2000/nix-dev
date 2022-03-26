@@ -11,7 +11,6 @@
     jq
     less
     man
-    neovim
     oh-my-zsh
     # needed for fzf
     perl
