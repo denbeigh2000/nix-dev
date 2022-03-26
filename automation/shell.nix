@@ -11,6 +11,9 @@ in
     shell = pkgs.mkShell {
       buildInputs = [
         python
+        pkgs.nix
+        pkgs.git
+        pkgs.cacert
       ];
       shellHook = ''
         PYTHONPATH=${python}/${python.sitePackages}
