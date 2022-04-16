@@ -40,6 +40,14 @@ TARBALL_TEMPLATE = r"""import (builtins.fetchTarball {{
 }})
 """
 
+FETCH_NIXDEV_TEMPLATE = """pkgs.fetchFromGitHub {{
+  owner = "denbeigh2000";
+  repo = "nix-dev";
+  # Latest master as of {date_str}
+  rev = "{sha}";
+  sha256 = "{checksum}";
+}}"""
+
 
 def _run_git_cmd(args: List[str]) -> str:
     argv = ["git"] + args
@@ -115,10 +123,25 @@ def update_github_tarball(
     package_name: str, repo_owner: str, repo_name: str, ref: str, output_file: Path
 ) -> None:
     (sha, date) = get_commit_info(repo_owner, repo_name, ref)
-
     tarball_url = GITHUB_COMMIT_TARBALL_URL_TEMPLATE.format(
         owner=repo_owner, name=repo_name, sha=sha
     )
+    checksum = get_url_shasum(tarball_url)
+
+    date_str = date.strftime("%Y-%m-%d")
+    name = f"{package_name}-{date_str}"
+    out_data = TARBALL_TEMPLATE.format(name=name, url=tarball_url, sha=checksum)
+    maybe_write_file(output_file, out_data)
+
+
+def get_commit_shasum(repo_owner: str, repo_name: str, sha: str) -> str:
+    url = GITHUB_COMMIT_TARBALL_URL_TEMPLATE.format(
+        owner=repo_owner, name=repo_name, sha=sha
+    )
+    return get_url_shasum(url)
+
+
+def get_url_shasum(tarball_url: str) -> str:
     proc = subprocess.run(
         ["nix-prefetch-url", "--unpack", tarball_url], capture_output=True
     )
@@ -128,12 +151,8 @@ def update_github_tarball(
         raise ClickException(
             f"nix-prefetch-url exited with non-success code {code}\n\n{stderr}"
         )
-    checksum = proc.stdout.decode("utf-8").strip()
 
-    date_str = date.strftime("%Y-%m-%d")
-    name = f"{package_name}-{date_str}"
-    out_data = TARBALL_TEMPLATE.format(name=name, url=tarball_url, sha=checksum)
-    maybe_write_file(output_file, out_data)
+    return proc.stdout.decode("utf-8").strip()
 
 
 def maybe_write_file(path: Path, data: str) -> None:
@@ -177,6 +196,15 @@ def push() -> None:
     subprocess.run(["git", "push", "origin", "master"]).check_returncode()
 
 
+@cli.command(name="get-latest")
+def get_latest() -> None:
+    (sha, date) = get_commit_info("denbeigh2000", "nix-dev", "master")
+    checksum = get_commit_shasum("denbeigh2000", "nix-dev", sha)
+    date_str = date.strftime("%Y-%m-%d")
+    msg = FETCH_NIXDEV_TEMPLATE.format(date_str=date_str, sha=sha, checksum=checksum)
+    print(msg, end="")
+
+
 @cli.group(name="upgrade", invoke_without_command=True)
 @click.pass_context
 def upgrade(ctx: click.Context) -> None:
@@ -206,7 +234,7 @@ def upgrade_nixpkgs(output_file: Path, commit: Optional[str], channel: str) -> N
 @upgrade.command(name="rust-overlay")
 @click.option("--output-file", type=Path, default=RUST_OVERLAY_FILE)
 @click.argument("ref", default=DEFAULT_RUST_OVERLAY_REF)
-def upgrade_rust_overlay(output_file: Path, ref: Optional[str]) -> None:
+def upgrade_rust_overlay(output_file: Path, ref: str) -> None:
     update_github_tarball("rust-overlay", "oxalica", "rust-overlay", ref, output_file)
 
 
