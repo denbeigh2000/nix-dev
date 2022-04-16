@@ -51,7 +51,7 @@ def _run_git_cmd(args: List[str]) -> str:
     return proc.stdout.decode("utf-8").strip()
 
 
-def check_master_branch():
+def check_master_branch() -> None:
     branch = _run_git_cmd(["rev-parse", "--abbrev-ref", "HEAD"])
     if branch != "master":
         raise ClickException(f"we are on non-master branch {branch}")
@@ -88,7 +88,7 @@ def get_commit_info(facet: str) -> (str, str):
 
     try:
         resp = requests.get(url)
-    except RequestException:
+    except RequestException as e:
         raise ClickException(f"Error getting commit info: {e}")
 
     data = resp.json()
@@ -108,20 +108,20 @@ def get_commit_info(facet: str) -> (str, str):
 
 
 @click.group(name="cli")
-def cli():
+def cli() -> None:
     pass
 
 
 @cli.command(name="autocheck")
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
 @click.pass_context
-def autocheck(ctx: click.Context, channel: str):
+def autocheck(ctx: click.Context, channel: str) -> None:
     ctx.invoke(upgrade, output_file=None, commit=None, channel=channel)
     ctx.invoke(push)
 
 
 @cli.command(name="push")
-def push():
+def push() -> None:
     if not has_changes():
         print("No changes to commit")
         return
@@ -143,11 +143,8 @@ def push():
 @click.option("--output-file")
 @click.option("--commit")
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
-def upgrade(output_file: Optional[str], commit: Optional[str], channel: str):
-    if commit is not None:
-        (sha, date) = get_latest_commit(commit)
-    else:
-        (sha, date) = get_commit_info(channel)
+def upgrade(output_file: Optional[str], commit: Optional[str], channel: str) -> None:
+    (sha, date) = get_commit_info(commit or channel)
 
     if output_file is None:
         output_file = find_pkgs_nix()
