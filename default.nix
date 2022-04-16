@@ -11,7 +11,7 @@ let
   python = import ./python.nix {};
   vim = import ./vim.nix {};
 
-  fullInteractive = base ++ interactive.base ++ python.deps ++ rust.deps ++ go.deps;
+  fullInteractive = base ++ interactive.base ++ python.deps ++ rust.deps ++ go.deps ++ [(vim.nvimCustom vim.allPlugins)];
 
 in
   {
