@@ -3,7 +3,7 @@
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import click
 import requests
@@ -12,30 +12,32 @@ from dateutil import parser
 from dateutil.tz import UTC
 from requests import RequestException
 
+ROOT = Path(__file__).parent.parent
+NIXPKGS_FILE = ROOT / "nixpkgs/default.nix"
+RUST_OVERLAY_FILE = ROOT / "rust_overlay/default.nix"
+
+DEFAULT_RUST_OVERLAY_REF = "master"
+
 DEFAULT_CHANNEL = "nixpkgs-unstable"
 CHANNELS = [
     DEFAULT_CHANNEL,
     "21.11",
 ]
 
-NIXPKGS_COMMIT_INFO_URL_TEMPLATE = (
-    "https://api.github.com/repos/nixos/nixpkgs/commits/{facet}"
+GITHUB_COMMIT_INFO_URL_TEMPLATE = (
+    "https://api.github.com/repos/{owner}/{name}/commits/{ref}"
 )
-NIXPKGS_COMMIT_TARBALL_URL_TEMPLATE = (
-    "https://github.com/nixos/nixpkgs/archive/{sha}.tar.gz"
+GITHUB_COMMIT_TARBALL_URL_TEMPLATE = (
+    "https://github.com/{owner}/{name}/archive/{sha}.tar.gz"
 )
 
-PKGS_NIX_TEMPLATE = r"""
-{{ system ? builtins.currentSystem }}:
-
-import (builtins.fetchTarball {{
+TARBALL_TEMPLATE = r"""import (builtins.fetchTarball {{
   # Descriptive name to make the store path easier to identify
-  name = "{channel}-{date}";
-  # Commit hash for nixos-unstable as of 2018-09-12
+  name = "{name}";
   url = "{url}";
   # Hash obtained using `nix-prefetch-url --unpack <url>`
-  sha256 = "{checksum_sha}";
-}}) {{ system = system; }}
+  sha256 = "{sha}";
+}})
 """
 
 
@@ -83,8 +85,10 @@ def find_pkgs_nix() -> str:
     return f"{path}/pkgs.nix"
 
 
-def get_commit_info(facet: str) -> (str, str):
-    url = NIXPKGS_COMMIT_INFO_URL_TEMPLATE.format(facet=facet)
+def get_commit_info(repo_owner: str, repo_name: str, ref: str) -> Tuple[str, datetime]:
+    url = GITHUB_COMMIT_INFO_URL_TEMPLATE.format(
+        owner=repo_owner, name=repo_name, ref=ref
+    )
 
     try:
         resp = requests.get(url)
@@ -107,6 +111,40 @@ def get_commit_info(facet: str) -> (str, str):
     return (sha, date)
 
 
+def update_github_tarball(
+    package_name: str, repo_owner: str, repo_name: str, ref: str, output_file: Path
+) -> None:
+    (sha, date) = get_commit_info(repo_owner, repo_name, ref)
+
+    tarball_url = GITHUB_COMMIT_TARBALL_URL_TEMPLATE.format(
+        owner=repo_owner, name=repo_name, sha=sha
+    )
+    proc = subprocess.run(
+        ["nix-prefetch-url", "--unpack", tarball_url], capture_output=True
+    )
+    code = proc.returncode
+    if code != 0:
+        stderr = proc.stderr.decode("utf-8")
+        raise ClickException(
+            f"nix-prefetch-url exited with non-success code {code}\n\n{stderr}"
+        )
+    checksum = proc.stdout.decode("utf-8").strip()
+
+    date_str = date.strftime("%Y-%m-%d")
+    name = f"{package_name}-{date_str}"
+    out_data = TARBALL_TEMPLATE.format(name=name, url=tarball_url, sha=checksum)
+    maybe_write_file(output_file, out_data)
+
+
+def maybe_write_file(path: Path, data: str) -> None:
+    if path.exists() and path.read_text() == data:
+        name = path.relative_to(ROOT)
+        print(f"{name} up to date")
+        return
+
+    path.write_text(data)
+
+
 @click.group(name="cli")
 def cli() -> None:
     pass
@@ -116,7 +154,7 @@ def cli() -> None:
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
 @click.pass_context
 def autocheck(ctx: click.Context, channel: str) -> None:
-    ctx.invoke(upgrade, output_file=None, commit=None, channel=channel)
+    ctx.invoke(upgrade)
     ctx.invoke(push)
 
 
@@ -139,39 +177,37 @@ def push() -> None:
     subprocess.run(["git", "push", "origin", "master"]).check_returncode()
 
 
-@cli.command(name="upgrade")
-@click.option("--output-file")
+@cli.group(name="upgrade", invoke_without_command=True)
+@click.pass_context
+def upgrade(ctx: click.Context) -> None:
+    ctx.invoke(upgrade_nixpkgs, output_file=NIXPKGS_FILE, channel=DEFAULT_CHANNEL)
+    ctx.invoke(
+        upgrade_rust_overlay,
+        output_file=RUST_OVERLAY_FILE,
+        ref=DEFAULT_RUST_OVERLAY_REF,
+    )
+
+
+@upgrade.command(name="nixpkgs")
+@click.option("--output-file", type=Path, default=NIXPKGS_FILE)
 @click.option("--commit")
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
-def upgrade(output_file: Optional[str], commit: Optional[str], channel: str) -> None:
-    (sha, date) = get_commit_info(commit or channel)
+def upgrade_nixpkgs(output_file: Path, commit: Optional[str], channel: str) -> None:
+    if commit is None:
+        ref = channel
+        pkg_title = channel
+    else:
+        ref = commit
+        pkg_title = "commit"
 
-    if output_file is None:
-        output_file = find_pkgs_nix()
+    update_github_tarball(pkg_title, "nixos", "nixpkgs", ref, output_file)
 
-    output_file = Path(output_file)
-    tarball_url = NIXPKGS_COMMIT_TARBALL_URL_TEMPLATE.format(sha=sha)
-    proc = subprocess.run(
-        ["nix-prefetch-url", "--unpack", tarball_url], capture_output=True
-    )
-    code = proc.returncode
-    if code != 0:
-        stderr = proc.stderr.decode("utf-8")
-        raise ClickException(
-            f"nix-prefetch-url exited with non-success code {code}\n\n{stderr}"
-        )
 
-    checksum = proc.stdout.decode("utf-8").strip()
-
-    date_str = date.strftime("%Y-%m-%d")
-    out_data = PKGS_NIX_TEMPLATE.format(
-        channel=channel, date=date_str, url=tarball_url, checksum_sha=checksum
-    )
-
-    if output_file.exists() and output_file.read_text() == out_data:
-        print("Aborting: content identical")
-
-    output_file.write_text(out_data)
+@upgrade.command(name="rust-overlay")
+@click.option("--output-file", type=Path, default=RUST_OVERLAY_FILE)
+@click.argument("ref", default=DEFAULT_RUST_OVERLAY_REF)
+def upgrade_rust_overlay(output_file: Path, ref: Optional[str]) -> None:
+    update_github_tarball("rust-overlay", "oxalica", "rust-overlay", ref, output_file)
 
 
 if __name__ == "__main__":

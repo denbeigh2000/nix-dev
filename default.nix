@@ -1,4 +1,7 @@
-{ pkgs ? import ./pkgs.nix {} }:
+{ pkgs ? import ./pkgs.nix {},
+  rust_channel ? "stable",
+  rust_version ? "1.60.0",
+}:
 
 let
   base = with pkgs; [
@@ -7,7 +10,10 @@ let
 
   interactive = import ./interactive.nix {};
   go = import ./go.nix {};
-  rust = import ./rust.nix {};
+  rust = import ./rust.nix {
+    channel = rust_channel;
+    version = rust_version;
+  };
   python = import ./python.nix {};
   vim = import ./vim.nix {};
 

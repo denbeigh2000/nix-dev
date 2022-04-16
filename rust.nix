@@ -1,13 +1,14 @@
 { pkgs ? import ./pkgs.nix {},
-  vim ? import ./vim.nix {}
+  vim ? import ./vim.nix {},
+  channel ? "stable",
+  version ? "1.60.0",
 }:
 
 let
   deps = with pkgs; [
-    rustc
+    rust-bin."${channel}"."${version}".default
     rustfmt
     rust-analyzer
-    cargo
     clippy
   ];
 
