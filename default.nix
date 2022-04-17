@@ -8,14 +8,16 @@ let
     curl
   ];
 
-  interactive = import ./interactive.nix {};
-  go = import ./go.nix {};
+  cli = import ./automation/default.nix { inherit (pkgs); };
+
+  interactive = import ./interactive.nix { inherit (pkgs); };
+  go = import ./go.nix { inherit (pkgs); };
   rust = import ./rust.nix {
     channel = rust_channel;
     version = rust_version;
   };
-  python = import ./python.nix {};
-  vim = import ./vim.nix {};
+  python = import ./python.nix { inherit (pkgs); };
+  vim = import ./vim.nix { inherit (pkgs); };
 
   fullInteractive = base ++ interactive.base ++ python.deps ++ rust.deps ++ go.deps ++ [(vim.nvimCustom vim.allPlugins)];
 
@@ -33,15 +35,15 @@ in
     inherit vim;
 
     pythonShell = pkgs.mkShell {
-      packages = interactive.base ++ python;
+      packages = interactive.base ++ python.deps ++ [python.nvim];
     };
 
     rustShell = pkgs.mkShell {
-      packages = interactive.base ++ rust;
+      packages = interactive.base ++ rust.deps ++ [rust.nvim];
     };
 
     goShell = pkgs.mkShell {
-      packages = interactive.base ++ go;
+      packages = interactive.base ++ go.deps ++ [go.nvim];
     };
 
     shell = pkgs.mkShell {
