@@ -2,8 +2,9 @@
 
 import subprocess
 from datetime import datetime
+from functools import cache
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 
 import click
 import requests
@@ -12,9 +13,34 @@ from dateutil import parser
 from dateutil.tz import UTC
 from requests import RequestException
 
-ROOT = Path(__file__).parent.parent.parent
-NIXPKGS_FILE = ROOT / "nixpkgs/default.nix"
-RUST_OVERLAY_FILE = ROOT / "rust_overlay/default.nix"
+
+@cache
+def root() -> Path:
+    git_output = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
+
+    return Path(git_output.decode("utf-8").strip())
+
+
+@cache
+def nixpkgs_file() -> Path:
+    return root() / "nixpkgs/default.nix"
+
+
+@cache
+def rust_overlay_file() -> Path:
+    return root() / "rust_overlay/default.nix"
+
+
+@cache
+def ok_autocheck_lines() -> Set[Path]:
+    r = root()
+    paths = set()
+    for path in [nixpkgs_file(), rust_overlay_file()]:
+        trimmed_path = path.relative_to(r)
+        paths.add(f"M {trimmed_path}")
+
+    return paths
+
 
 DEFAULT_RUST_OVERLAY_REF = "master"
 
@@ -74,14 +100,23 @@ def check_master_branch() -> None:
 
 
 def has_changes() -> bool:
-    output = _run_git_cmd(["status", "--porcelain"])
+    status_lines = [
+        line.strip()
+        for line in _run_git_cmd(["status", "--porcelain"]).splitlines()
+    ]
 
-    if output == "M pkgs.nix":
-        return True
-    elif output == "":
+    if not any(status_lines):
         return False
-    else:
-        raise ClickException("Unexpected git state changes, refusing to commit")
+
+    filter_lines = ok_autocheck_lines()
+    bad_lines = [line for line in status_lines if line not in filter_lines]
+    if bad_lines:
+        joined = "\n".join(bad_lines)
+        raise ClickException(
+            f"Unexpected git state changes, refusing to commit\n\n{joined}"
+        )
+
+    return True
 
 
 def find_pkgs_nix() -> str:
@@ -157,7 +192,7 @@ def get_url_shasum(tarball_url: str) -> str:
 
 def maybe_write_file(path: Path, data: str) -> None:
     if path.exists() and path.read_text() == data:
-        name = path.relative_to(ROOT)
+        name = path.relative_to(root())
         print(f"{name} up to date")
         return
 
@@ -173,6 +208,9 @@ def cli() -> None:
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
 @click.pass_context
 def autocheck(ctx: click.Context, channel: str) -> None:
+    if has_changes():
+        raise ClickException("There are currently uncommitted changes, cannot continue")
+
     check_master_branch()
 
     ctx.invoke(upgrade)
@@ -194,7 +232,7 @@ def push(skip_checks: bool = False) -> None:
     time_str = time_now.strftime("%Y-%m-%d")
     commit_msg = f"bot: updated nixpkgs on {time_str}"
 
-    subprocess.run(["git", "add", ROOT]).check_returncode()
+    subprocess.run(["git", "add", root()]).check_returncode()
     subprocess.run(["git", "commit", "-m", commit_msg]).check_returncode()
     subprocess.run(["git", "push", "origin", "master"]).check_returncode()
 
@@ -220,7 +258,7 @@ def upgrade(ctx: click.Context) -> None:
 
 
 @upgrade.command(name="nixpkgs")
-@click.option("--output-file", type=Path, default=NIXPKGS_FILE)
+@click.option("--output-file", type=Path, default=nixpkgs_file)
 @click.option("--commit")
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
 def upgrade_nixpkgs(output_file: Path, commit: Optional[str], channel: str) -> None:
@@ -235,7 +273,7 @@ def upgrade_nixpkgs(output_file: Path, commit: Optional[str], channel: str) -> N
 
 
 @upgrade.command(name="rust-overlay")
-@click.option("--output-file", type=Path, default=RUST_OVERLAY_FILE)
+@click.option("--output-file", type=Path, default=rust_overlay_file)
 @click.argument("ref", default=DEFAULT_RUST_OVERLAY_REF)
 def upgrade_rust_overlay(output_file: Path, ref: str) -> None:
     update_github_tarball("rust-overlay", "oxalica", "rust-overlay", ref, output_file)
