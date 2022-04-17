@@ -208,12 +208,13 @@ def get_latest() -> None:
 @cli.group(name="upgrade", invoke_without_command=True)
 @click.pass_context
 def upgrade(ctx: click.Context) -> None:
-    ctx.invoke(upgrade_nixpkgs, output_file=NIXPKGS_FILE, channel=DEFAULT_CHANNEL)
-    ctx.invoke(
-        upgrade_rust_overlay,
-        output_file=RUST_OVERLAY_FILE,
-        ref=DEFAULT_RUST_OVERLAY_REF,
-    )
+    pass
+    # ctx.invoke(upgrade_nixpkgs, output_file=NIXPKGS_FILE, channel=DEFAULT_CHANNEL)
+    # ctx.invoke(
+    #     upgrade_rust_overlay,
+    #     output_file=RUST_OVERLAY_FILE,
+    #     ref=DEFAULT_RUST_OVERLAY_REF,
+    # )
 
 
 @upgrade.command(name="nixpkgs")
