@@ -21,6 +21,8 @@ let
 
 in
   {
+    inherit pkgs;
+
     inherit go;
     inherit rust;
     inherit python;
