@@ -173,17 +173,20 @@ def cli() -> None:
 @click.argument("channel", default=DEFAULT_CHANNEL, type=click.Choice(CHANNELS))
 @click.pass_context
 def autocheck(ctx: click.Context, channel: str) -> None:
+    check_master_branch()
+
     ctx.invoke(upgrade)
-    ctx.invoke(push)
+    ctx.invoke(push, skip_checks=True)
 
 
 @cli.command(name="push")
-def push() -> None:
+def push(skip_checks: bool = False) -> None:
     if not has_changes():
         print("No changes to commit")
         return
 
-    check_master_branch()
+    if not skip_checks:
+        check_master_branch()
 
     pkgs_path = find_pkgs_nix()
     time_now = datetime.now(UTC)
@@ -191,7 +194,7 @@ def push() -> None:
     time_str = time_now.strftime("%Y-%m-%d")
     commit_msg = f"bot: updated nixpkgs on {time_str}"
 
-    subprocess.run(["git", "add", pkgs_path]).check_returncode()
+    subprocess.run(["git", "add", ROOT]).check_returncode()
     subprocess.run(["git", "commit", "-m", commit_msg]).check_returncode()
     subprocess.run(["git", "push", "origin", "master"]).check_returncode()
 
@@ -205,16 +208,15 @@ def get_latest() -> None:
     print(msg, end="")
 
 
-@cli.group(name="upgrade", invoke_without_command=True)
+@cli.group(name="upgrade", chain=True, invoke_without_command=True)
 @click.pass_context
 def upgrade(ctx: click.Context) -> None:
-    pass
-    # ctx.invoke(upgrade_nixpkgs, output_file=NIXPKGS_FILE, channel=DEFAULT_CHANNEL)
-    # ctx.invoke(
-    #     upgrade_rust_overlay,
-    #     output_file=RUST_OVERLAY_FILE,
-    #     ref=DEFAULT_RUST_OVERLAY_REF,
-    # )
+    if ctx.invoked_subcommand is not None:
+        return
+
+    # We were invoked without a subcommand, upgrade all the things
+    for upgrade_operation in (upgrade_nixpkgs, upgrade_rust_overlay):
+        ctx.invoke(upgrade_operation)
 
 
 @upgrade.command(name="nixpkgs")
