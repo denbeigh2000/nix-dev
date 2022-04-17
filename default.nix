@@ -34,6 +34,8 @@ in
 
     inherit vim;
 
+    inherit cli;
+
     pythonShell = pkgs.mkShell {
       packages = interactive.base ++ python.deps ++ [python.nvim];
     };

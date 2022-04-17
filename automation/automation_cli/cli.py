@@ -12,7 +12,7 @@ from dateutil import parser
 from dateutil.tz import UTC
 from requests import RequestException
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 NIXPKGS_FILE = ROOT / "nixpkgs/default.nix"
 RUST_OVERLAY_FILE = ROOT / "rust_overlay/default.nix"
 
