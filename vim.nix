@@ -178,7 +178,7 @@ let
         let g:airline_powerline_fonts=1
         let g:airline_theme='gruvbox'
 
-        let g:rooter_patterns = ['go.mod', 'WORKSPACE', '.git/', 'Cargo.toml', 'pom.xml']
+        let g:rooter_patterns = ['go.mod', 'WORKSPACE', '.git/', 'Cargo.toml', 'pom.xml', '.gitignore']
         let g:LangaugeClient_rootMarkers = ['go.mod']
 
         " FZF Shortcut Bindings
