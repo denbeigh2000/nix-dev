@@ -27,12 +27,15 @@ let
     gruvbox
   ];
 
-  pythonPlugins = vimPlugins: [];
-  rustPlugins = vimPlugins: [];
+  pythonPlugins = vimPlugins: [ ];
+  rustPlugins = vimPlugins: [ ];
   goPlugins = vimPlugins: with vimPlugins; [ vim-go ];
-  jsPlugins = vimPlugins: with vimPlugins; [ 
+  jsPlugins = vimPlugins: with vimPlugins; [
     vim-jsx-typescript
     vim-javascript
+  ];
+  rnix-lsp = [
+    (import ./rnix-lsp/default.nix)
   ];
 
   allPlugins = vimPlugins:
@@ -160,6 +163,7 @@ let
             \ 'typescriptreact': ['./node_modules/.bin/typescript-language-server', '--stdio'],
             \ 'c': ['clangd'],
             \ 'cpp': ['clangd'],
+            \ 'nix': ['rnix-lsp'],
             \ }
 
         " let g:LanguageClient_settingsPath = '/home/denbeigh/.config/nvim/langclient.json'
@@ -230,4 +234,5 @@ in
     inherit jsPlugins;
     inherit allPlugins;
     inherit nvimCustom;
+    inherit rnix-lsp;
   }

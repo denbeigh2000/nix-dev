@@ -19,7 +19,13 @@ let
   python = import ./python.nix { inherit (pkgs); };
   vim = import ./vim.nix { inherit (pkgs); };
 
-  fullInteractive = base ++ interactive.base ++ python.deps ++ rust.deps ++ go.deps ++ [(vim.nvimCustom vim.allPlugins)];
+  fullInteractive = base
+    ++ interactive.base
+    ++ python.deps
+    ++ rust.deps
+    ++ go.deps
+    ++ [(vim.nvimCustom vim.allPlugins)]
+    ++ vim.rnix-lsp;
 
 in
   {
