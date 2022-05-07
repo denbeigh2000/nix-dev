@@ -1,4 +1,4 @@
-{ pkgs ? import ./pkgs.nix {},
+{ pkgs ? (import ./pkgs.nix {}),
   rust_channel ? "stable",
   rust_version ? "1.60.0",
 }:
