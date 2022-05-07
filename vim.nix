@@ -1,4 +1,4 @@
-{ pkgs ? import ./pkgs.nix {} } :
+{ pkgs ? import ./pkgs.nix { } }:
 
 let
   basePlugins = vimPlugins: with vimPlugins; [
@@ -226,13 +226,13 @@ let
     };
   };
 in
-  {
-    inherit basePlugins;
-    inherit pythonPlugins;
-    inherit rustPlugins;
-    inherit goPlugins;
-    inherit jsPlugins;
-    inherit allPlugins;
-    inherit nvimCustom;
-    inherit rnix-lsp;
-  }
+{
+  inherit basePlugins;
+  inherit pythonPlugins;
+  inherit rustPlugins;
+  inherit goPlugins;
+  inherit jsPlugins;
+  inherit allPlugins;
+  inherit nvimCustom;
+  inherit rnix-lsp;
+}

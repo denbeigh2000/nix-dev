@@ -1,6 +1,7 @@
-{ pkgs ? (import ./pkgs.nix {}),
-  rust_channel ? "stable",
-  rust_version ? "1.60.0",
+{ pkgs ? (import ./pkgs.nix { })
+, rust_channel ? "stable"
+, rust_version ? "1.60.0"
+,
 }:
 
 let
@@ -24,37 +25,37 @@ let
     ++ python.deps
     ++ rust.deps
     ++ go.deps
-    ++ [(vim.nvimCustom vim.allPlugins)]
+    ++ [ (vim.nvimCustom vim.allPlugins) ]
     ++ vim.rnix-lsp;
 
 in
-  {
-    inherit pkgs;
+{
+  inherit pkgs;
 
-    inherit go;
-    inherit rust;
-    inherit python;
+  inherit go;
+  inherit rust;
+  inherit python;
 
-    inherit interactive;
-    inherit fullInteractive;
+  inherit interactive;
+  inherit fullInteractive;
 
-    inherit vim;
+  inherit vim;
 
-    inherit cli;
+  inherit cli;
 
-    pythonShell = pkgs.mkShell {
-      packages = interactive.base ++ python.deps ++ [python.nvim];
-    };
+  pythonShell = pkgs.mkShell {
+    packages = interactive.base ++ python.deps ++ [ python.nvim ];
+  };
 
-    rustShell = pkgs.mkShell {
-      packages = interactive.base ++ rust.deps ++ [rust.nvim];
-    };
+  rustShell = pkgs.mkShell {
+    packages = interactive.base ++ rust.deps ++ [ rust.nvim ];
+  };
 
-    goShell = pkgs.mkShell {
-      packages = interactive.base ++ go.deps ++ [go.nvim];
-    };
+  goShell = pkgs.mkShell {
+    packages = interactive.base ++ go.deps ++ [ go.nvim ];
+  };
 
-    shell = pkgs.mkShell {
-      packages = fullInteractive;
-    };
-  }
+  shell = pkgs.mkShell {
+    packages = fullInteractive;
+  };
+}

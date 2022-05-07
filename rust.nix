@@ -1,7 +1,8 @@
-{ pkgs ? import ./pkgs.nix {},
-  vim ? import ./vim.nix {},
-  channel ? "stable",
-  version ? "1.60.0",
+{ pkgs ? import ./pkgs.nix { }
+, vim ? import ./vim.nix { }
+, channel ? "stable"
+, version ? "1.60.0"
+,
 }:
 
 let
@@ -15,7 +16,7 @@ let
   nvim = vim.nvimCustom vim.rustPlugins;
 
 in
-  {
-    inherit deps;
-    inherit nvim;
-  }
+{
+  inherit deps;
+  inherit nvim;
+}

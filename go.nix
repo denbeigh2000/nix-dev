@@ -1,5 +1,5 @@
-{ pkgs ? import ./pkgs.nix {},
-  vim ? import ./vim.nix {}
+{ pkgs ? import ./pkgs.nix { }
+, vim ? import ./vim.nix { }
 }:
 
 {

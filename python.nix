@@ -1,5 +1,5 @@
-{ pkgs ? import ./pkgs.nix {},
-  vim ? import ./vim.nix {}
+{ pkgs ? import ./pkgs.nix { }
+, vim ? import ./vim.nix { }
 }:
 
 let
@@ -12,7 +12,7 @@ let
   nvim = vim.nvimCustom vim.pythonPlugins;
 
 in
-  {
-    inherit deps;
-    inherit nvim;
-  }
+{
+  inherit deps;
+  inherit nvim;
+}

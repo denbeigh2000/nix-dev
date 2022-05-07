@@ -1,4 +1,4 @@
-{ pkgs ? import ../pkgs.nix {} }:
+{ pkgs ? import ../pkgs.nix { } }:
 
 with pkgs;
 let
@@ -6,17 +6,17 @@ let
     click
     requests
     python-dateutil
-  ]; 
+  ];
   python = python310.withPackages python-packages;
 
-  runtime-deps = [git nix cacert];
-in 
-  python310.pkgs.buildPythonApplication rec {
-    name = "cli";
-    version = "0.1";
+  runtime-deps = [ git nix cacert ];
+in
+python310.pkgs.buildPythonApplication rec {
+  name = "cli";
+  version = "0.1";
 
-    dontCheck = true;
+  dontCheck = true;
 
-    propagatedBuildInputs = python-packages python310.pkgs ++ runtime-deps;
-    src = ./.;
-  }
+  propagatedBuildInputs = python-packages python310.pkgs ++ runtime-deps;
+  src = ./.;
+}
