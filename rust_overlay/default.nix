@@ -1,7 +1,7 @@
 import (builtins.fetchTarball {
   # Descriptive name to make the store path easier to identify
-  name = "rust-overlay-2022-05-07";
-  url = "https://github.com/oxalica/rust-overlay/archive/43f4c4319fd29d07912a65d405ff03069c7748c4.tar.gz";
+  name = "rust-overlay-2022-05-28";
+  url = "https://github.com/oxalica/rust-overlay/archive/0be302358da0f8ea3d3cc24a0639b6354fc45e7c.tar.gz";
   # Hash obtained using `nix-prefetch-url --unpack <url>`
-  sha256 = "0301x86j0m49c4sf22c9fiyigsn9a4k4bhwmaxvw6yiz2qnqyg0k";
+  sha256 = "1gk3k5a482wz0y4k8wdgq7fz2qz1lwswgsqw65rlyy4zp66129d5";
 })
