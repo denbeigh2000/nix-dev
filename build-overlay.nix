@@ -2,7 +2,7 @@
   let
     python = import ./python.nix { inherit pkgs; };
     rust = import ./rust.nix { inherit pkgs; };
-    goPkg = import ./go.nix { inherit pkgs; };
+    go = import ./go.nix { inherit pkgs; };
     node = import ./node.nix { inherit pkgs; };
     nix = import ./nix.nix { inherit pkgs rnix-lsp; };
   in
@@ -10,6 +10,8 @@
     inherit (pkgs) neovim;
 
     devPackages = {
+      inherit (pkgs) neovim;
+
       rust = {
         inherit (rust) all rust rustMinimal rust-analyzer;
       };
@@ -19,7 +21,7 @@
       };
 
       go = {
-        inherit (goPkg) all go gopls;
+        inherit (go) all go gopls;
       };
 
       node = {
