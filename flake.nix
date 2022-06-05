@@ -31,10 +31,10 @@
         let
           pkgs = import nixpkgs {
             system = prev.stdenv.system;
-            overlays = [ (import rust-overlay) ];
+            overlays = [ (import rust-overlay) denbeigh-neovim.overlay ];
           };
         in
-        makeOverlay { inherit pkgs denbeigh-neovim rnix-lsp; }
+        makeOverlay { inherit pkgs rnix-lsp; }
       );
     in
     { inherit overlay; } // flake-utils.lib.eachDefaultSystem (system:
