@@ -1,18 +1,25 @@
-{ pkgs ? import ./pkgs.nix { }
-, vim ? import ./vim.nix { }
-}:
+{ pkgs }:
 
 let
-  deps = with pkgs; [
-    python310
-    python310Packages.python-lsp-server
-    python310Packages.pynvim
-  ];
-
-  nvim = vim.nvimCustom vim.pythonPlugins;
+  inherit (pkgs.stdenv) system;
+  inherit (pkgs) python39 python310;
+  packages = packages:
+    with packages; ([ pynvim ]) ++ (
+      # NOTE: Disabled on aarch64-darwin due to broken pyopenssl dependency
+      # https://github.com/NixOS/nixpkgs/pull/172397
+      if system != "aarch64-darwin"
+      then
+        ([
+          python-lsp-server
+          pylsp-mypy
+          pyls-isort
+          python-lsp-black
+        ]) else [ ]
+    );
 
 in
 {
-  inherit deps;
-  inherit nvim;
+  inherit packages;
+  python39 = python39.withPackages packages;
+  python310 = python310.withPackages packages;
 }

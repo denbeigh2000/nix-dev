@@ -29,35 +29,4 @@
     gnugrep
     nix
   ];
-
-  vimPlugins = with pkgs.vimPlugins; [
-    LanguageClient-neovim
-    nvim-yarp
-    ncm2
-    vim-gitgutter
-    vim-rooter
-    incsearch-vim
-    fzf-vim
-    suda-vim
-    committia-vim
-    vim-fugitive
-    vim-git
-    vim-airline
-    taglist-vim
-    indentLine
-    vim-toml
-    csv-vim
-    vim-scala
-    vim-go
-    vim-nix
-    vim-jsx-typescript
-    vim-javascript
-    ansible-vim
-    vim-markdown
-    vim-puppet
-    arcanist-vim
-    vim-protobuf
-    kotlin-vim
-    gruvbox
-  ];
 }

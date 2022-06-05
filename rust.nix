@@ -1,22 +1,13 @@
-{ pkgs ? import ./pkgs.nix { }
-, vim ? import ./vim.nix { }
-, channel ? "stable"
-, version ? "1.60.0"
-,
-}:
+{ pkgs }:
 
 let
-  deps = with pkgs; [
-    rust-bin."${channel}"."${version}".default
-    rustfmt
-    rust-analyzer
-    clippy
-  ];
+  inherit (pkgs) rust-analyzer;
+  rust = pkgs.rust-bin.stable."1.61.0".default;
+  rustMinimal = pkgs.rust-bin.stable."1.61.0".minimal;
 
-  nvim = vim.nvimCustom vim.rustPlugins;
+  all = [ rust rust-analyzer ];
 
 in
 {
-  inherit deps;
-  inherit nvim;
+  inherit all rust rustMinimal rust-analyzer;
 }

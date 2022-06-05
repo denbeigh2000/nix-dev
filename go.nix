@@ -1,8 +1,9 @@
-{ pkgs ? import ./pkgs.nix { }
-, vim ? import ./vim.nix { }
-}:
+{ pkgs }:
 
+let
+  inherit (pkgs) go gopls;
+in
 {
-  deps = with pkgs; [ go ];
-  nvim = vim.nvimCustom vim.goPlugins;
+  inherit go gopls;
+  all = [ go gopls ];
 }
