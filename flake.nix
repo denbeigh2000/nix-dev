@@ -12,7 +12,7 @@
     };
 
     denbeigh-neovim = {
-      url = "git+ssh://git@github.com/denbeigh2000/neovim-nix";
+      url = "github:denbeigh2000/neovim-nix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };

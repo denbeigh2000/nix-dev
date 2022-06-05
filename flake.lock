@@ -12,15 +12,15 @@
       "locked": {
         "lastModified": 1654442668,
         "narHash": "sha256-igbos3a2nVCAHYU+eA1fGRAPQMsw8MgAuSIiViORH+g=",
-        "ref": "master",
+        "owner": "denbeigh2000",
+        "repo": "neovim-nix",
         "rev": "907604f0e37e5c9f16f3b77f8480c565c717f4d9",
-        "revCount": 8,
-        "type": "git",
-        "url": "ssh://git@github.com/denbeigh2000/neovim-nix"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/denbeigh2000/neovim-nix"
+        "owner": "denbeigh2000",
+        "repo": "neovim-nix",
+        "type": "github"
       }
     },
     "flake-utils": {
