@@ -10,6 +10,7 @@ let
 
 in
   {
+    inherit (pkgs.nodePackages) typescript-language-server;
     inherit (pkgs) nodejs-16_x nodejs-18_x yarn;
     inherit allNode16 allNode18;
   }

@@ -23,7 +23,7 @@
       };
 
       node = {
-        inherit (node) node16 node18 yarn;
+        inherit (node) nodejs-16_x nodejs-18_x allNode16 allNode18 yarn typescript-language-server;
       };
 
       inherit nix;
