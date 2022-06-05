@@ -1,4 +1,4 @@
-{ pkgs, denbeigh-neovim }:
+{ pkgs, denbeigh-neovim, rnix-lsp }:
   let
     neovim = import denbeigh-neovim { inherit pkgs; };
 
@@ -6,6 +6,7 @@
     rust = import ./rust.nix { inherit pkgs; };
     goPkg = import ./go.nix { inherit pkgs; };
     node = import ./node.nix { inherit pkgs; };
+    nix = import ./nix.nix { inherit pkgs rnix-lsp; };
   in
   {
     devPackages = {
@@ -24,5 +25,7 @@
       node = {
         inherit (node) node16 node18 yarn;
       };
+
+      inherit nix;
     };
   }

@@ -12,14 +12,19 @@
     };
 
     denbeigh-neovim = {
-      # url = "git+ssh://git@github.com/denbeigh2000/neovim-nix";
-      url = "path:/home/denbeigh/dev/mine/neovim";
+      url = "git+ssh://git@github.com/denbeigh2000/neovim-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
+    rnix-lsp = {
+      url = "github:nix-community/rnix-lsp";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, denbeigh-neovim }:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, denbeigh-neovim, rnix-lsp }:
     let
       makeOverlay = import ./build-overlay.nix;
       overlay = final: prev: (
@@ -29,7 +34,7 @@
             overlays = [ (import rust-overlay) ];
           };
         in
-        makeOverlay { inherit pkgs denbeigh-neovim; }
+        makeOverlay { inherit pkgs denbeigh-neovim rnix-lsp; }
       );
     in
     { inherit overlay; } // flake-utils.lib.eachDefaultSystem (system:
@@ -41,12 +46,19 @@
         rust = import ./rust.nix { inherit pkgs; };
         go = import ./go.nix { inherit pkgs; };
         node = import ./node.nix { inherit pkgs; };
+        nix = import ./nix.nix { inherit pkgs rnix-lsp; };
+
+        defaultSet = [ pkgs.neovim python.python310 nix.rnix-lsp ] ++ rust.all ++ go.all ++ node.allNode18;
       in
       {
         defaultPackage = pkgs.symlinkJoin {
           name = "denbeigh-devtools";
           version = "0.1.0";
-          paths = [ pkgs.neovim python.python310 ] ++ rust.all ++ go.all ++ node.allNode18;
+          paths = defaultSet;
+        };
+
+        devShell = pkgs.mkShell {
+          packages = defaultSet;
         };
 
         packages = {
@@ -57,6 +69,7 @@
           inherit (python) python39 python310;
           inherit (go) go gopls;
           inherit (node) nodejs-16_x nodejs-18_x yarn;
+          inherit (nix) rnix-lsp;
         };
       }
     );
