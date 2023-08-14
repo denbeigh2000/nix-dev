@@ -6,11 +6,7 @@
     node = import ./node.nix { inherit pkgs; };
   in
   {
-    inherit (pkgs) neovim;
-
     devPackages = {
-      inherit (pkgs) neovim;
-
       rust = {
         inherit (rust) all rust rustMinimal rust-analyzer;
       };
