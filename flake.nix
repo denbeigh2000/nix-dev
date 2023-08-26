@@ -10,18 +10,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-
-    denbeigh-neovim = {
-      url = "github:denbeigh2000/neovim-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, denbeigh-neovim, ... }:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, ... }:
     let
       makeOverlay = import ./build-overlay.nix;
-      overlays = [ (import rust-overlay) denbeigh-neovim.overlays.default ];
+      overlays = [ (import rust-overlay) ];
       overlay = final: prev: (
         let
           pkgs = import nixpkgs {
@@ -42,7 +36,7 @@
         node = import ./node.nix { inherit pkgs; };
         nix = import ./nix.nix { inherit pkgs; };
 
-        defaultSet = [ pkgs.neovim python.python310 ] ++ rust.all ++ go.all ++ node.allNode18;
+        defaultSet = [ python.python310 ] ++ rust.all ++ go.all ++ node.allNode18;
       in
       {
         devShells.default = pkgs.mkShell {
