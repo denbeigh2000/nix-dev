@@ -36,7 +36,7 @@
         node = import ./node.nix { inherit pkgs; };
         nix = import ./nix.nix { inherit pkgs; };
 
-        defaultSet = [ python.python310 ] ++ rust.all ++ go.all ++ node.allNode18;
+        defaultSet = [ python.python310 ] ++ rust.all ++ go.all ++ node.allNode21;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -52,9 +52,9 @@
 
           inherit (pkgs) neovim;
           inherit (rust) rust rustMinimal rust-analyzer;
-          inherit (python) python39 python310;
+          inherit (python) python310 python311;
           inherit (go) go gopls;
-          inherit (node) nodejs-16_x nodejs-18_x yarn;
+          inherit (node) nodejs_20 nodejs_21 yarn;
         };
       }
     );

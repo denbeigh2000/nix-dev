@@ -5,12 +5,12 @@ let
     typescript-language-server
   ];
 
-  allNode18 = [ pkgs.nodejs-18_x ] ++ packages;
-  allNode16 = [ pkgs.nodejs-16_x ] ++ packages;
+  allNode21 = [ pkgs.nodejs_21 ] ++ packages;
+  allNode20 = [ pkgs.nodejs_20 ] ++ packages;
 
 in
-  {
-    inherit (pkgs.nodePackages) typescript-language-server;
-    inherit (pkgs) nodejs-16_x nodejs-18_x yarn;
-    inherit allNode16 allNode18;
-  }
+{
+  inherit (pkgs.nodePackages) typescript-language-server;
+  inherit (pkgs) nodejs_20 nodejs_21 yarn;
+  inherit allNode20 allNode21;
+}
