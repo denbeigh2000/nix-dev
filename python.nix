@@ -5,7 +5,11 @@ let
   inherit (pkgs) python310 python3;
 
   packages = ps: with ps; [
+    pip
+    virtualenv
+
     pynvim
+
     python-lsp-server
     pylsp-mypy
     pyls-isort
