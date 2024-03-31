@@ -10,9 +10,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+
+    denbeigh-ci = {
+      url = "github:denbeigh2000/ci";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, ... }:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, denbeigh-ci, ... }:
     let
       makeOverlay = import ./build-overlay.nix;
       overlays = [ (import rust-overlay) ];
@@ -39,6 +45,8 @@
         defaultSet = [ python.python310 ] ++ rust.all ++ go.all ++ node.allNode21;
       in
       {
+        ci = denbeigh-ci.lib.mkCIConfig { inherit self pkgs; };
+
         devShells.default = pkgs.mkShell {
           packages = defaultSet;
         };
