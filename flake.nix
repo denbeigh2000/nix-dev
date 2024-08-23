@@ -42,7 +42,7 @@
         node = import ./node.nix { inherit pkgs; };
         nix = import ./nix.nix { inherit pkgs; };
 
-        defaultSet = [ python.python310 ] ++ rust.all ++ go.all ++ node.allNode21;
+        defaultSet = [ python.python310 ] ++ rust.all ++ go.all ++ node.allNode22;
       in
       {
         ci = denbeigh-ci.lib.mkCIConfig { inherit self pkgs; };
@@ -62,7 +62,7 @@
           inherit (rust) rust rustMinimal rust-analyzer;
           inherit (python) python310 python311;
           inherit (go) go gopls;
-          inherit (node) nodejs_20 nodejs_21 yarn;
+          inherit (node) nodejs_20 nodejs_22 yarn;
         };
       }
     );

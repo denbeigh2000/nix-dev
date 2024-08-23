@@ -20,7 +20,7 @@ in
     };
 
     node = {
-      inherit (node) nodejs_20 nodejs_21 allNode20 allNode21 yarn typescript-language-server;
+      inherit (node) nodejs_20 nodejs_22 allNode20 allNode22 yarn typescript-language-server;
     };
   };
 }
