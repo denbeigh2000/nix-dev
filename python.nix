@@ -2,7 +2,7 @@
 
 let
   inherit (pkgs.stdenv) system;
-  inherit (pkgs) python310 python3;
+  inherit (pkgs) python313 python3;
 
   packages = ps: with ps; [
     pip
@@ -19,6 +19,6 @@ let
 in
 {
   inherit packages;
-  python310 = python310.withPackages packages;
-  python311 = python3.withPackages packages;
+  python313 = python313.withPackages packages;
+  python312 = python3.withPackages packages;
 }

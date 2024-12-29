@@ -12,7 +12,7 @@ in
     };
 
     python = {
-      inherit (python) python310 python311 packages;
+      inherit (python) python312 python313 packages;
     };
 
     go = {
